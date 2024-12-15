@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-content fade-in">
+    <h2>Welcome to The WifeApp2</h2>
+    <p>Bringing you daily inspiration, tips, and resources for a balanced life.</p>
+</div>
+<div class="quote-section fade-in">
+    <h2>Your Daily Quote:</h2>
+    <blockquote>
+        {{ quote }}
+        <footer>
+            — {{ author }}{% if year %} ({{ year }}){% endif %}
+        </footer>
+    </blockquote>
+</div>
+<div class="image-section">
+    <img src="{{ daily_image_url }}" alt="Daily Generative Image">
+</div>
+{% endblock %}
