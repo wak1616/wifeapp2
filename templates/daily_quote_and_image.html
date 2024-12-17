@@ -6,7 +6,8 @@
     <p>Bringing you daily inspiration, tips, and resources for a balanced life.</p>
 </div>
 <div class="quote-section fade-in">
-    <h2>Your Daily Quote:</h2>
+    <h2>Today's Quote</h2>
+    <div class="update-frequency">Updated daily</div>
     <blockquote>
         {{ quote }}
         <footer>
@@ -15,6 +16,12 @@
     </blockquote>
 </div>
 <div class="image-section">
-    <img src="{{ daily_image_url }}" alt="Daily Generative Image">
+    {% if daily_image_url %}
+        <img src="{{ daily_image_url }}" alt="Daily Generative Image" 
+             onerror="this.onerror=null; this.src='https://via.placeholder.com/1024x1024.png?text=Image+Loading+Failed';">
+    {% else %}
+        <img src="https://via.placeholder.com/1024x1024.png?text=No+Image+Available" 
+             alt="No image available">
+    {% endif %}
 </div>
 {% endblock %}

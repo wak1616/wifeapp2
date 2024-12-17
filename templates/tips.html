@@ -1,8 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Parenting Tip</h2>
-    <p>{{ tip1 }}</p>
-    <h2>Nutrition Tip</h2>
-    <p>{{ tip2 }}</p>
+<div class="tips-container">
+    <div class="update-frequency">Updated daily</div>
+    <div class="tip-card" onclick="openChat('{{ tip1 }}', 'parenting')">
+        <div class="tip-image">
+            <img src="{{ url_for('static', filename='images/parenting.webp') }}" alt="Parenting Tip">
+        </div>
+        <div class="tip-content">
+            <h2>Today's Parenting Tip</h2>
+            <p>{{ tip1 }}</p>
+        </div>
+    </div>
+    
+    <div class="tip-card" onclick="openChat('{{ tip2 }}', 'nutrition')">
+        <div class="tip-image">
+            <img src="{{ url_for('static', filename='images/nutrition.webp') }}" alt="Nutrition Tip">
+        </div>
+        <div class="tip-content">
+            <h2>Today's Nutrition Tip</h2>
+            <p>{{ tip2 }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h3>Expert Chat</h3>
+        <button class="close-chat" onclick="closeChat()">&times;</button>
+    </div>
+    <div class="chat-messages"></div>
+    <div class="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Type your message...">
+        <button id="send-message">Send</button>
+    </div>
+</div>
 {% endblock %}

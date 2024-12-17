@@ -5,26 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WifeApp2</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='images/WAfaviconsmall.png') }}">
 </head>
 <body>
     <header>
-        <h1>WifeApp2</h1>
+        <div class="header-content">
+            <img src="{{ url_for('static', filename='images/WAfavicon.png') }}" alt="WifeApp2 Logo" class="header-logo">
+            <h1>WifeApp2</h1>
+        </div>
         <div class="date">{{ current_date }}</div>
     </header>
     <nav>
-        <a href="{{ url_for('daily_quote_and_image') }}">Daily Quote & Image</a>
-        <a href="{{ url_for('tips') }}">Tips & Chat</a>
-        <a href="{{ url_for('podcasts') }}">Podcast Reccomendations</a>
-        <a href="{{ url_for('about') }}">About</a>
+        <a href="/">Home</a>
+        <a href="/tips">Tips</a>
+        <a href="/podcasts">Podcasts</a>
+        <a href="/about">About</a>
     </nav>
-    
     <main>
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
-
     <footer>
-        <p>&copy; {{ current_date }} WifeApp2. All rights reserved.</p>
+        <p>&copy; 2024 WifeApp2. All rights reserved.</p>
     </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html> 

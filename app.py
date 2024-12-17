@@ -1,12 +1,41 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify, request
 from datetime import datetime
 from scraping import get_all_spotify_podcasts
 from quotes_db import get_random_quote
+from tips_db import get_random_tip
+from dotenv import load_dotenv
+import os
+from openai import OpenAI
+from dotenv import load_dotenv
+from chat import ChatBot
 
 app = Flask(__name__)
 
-def get_daily_image_url():
-    return "https://picsum.photos/1200/600?random=1"
+def get_daily_image_url(quote):
+    try:
+        load_dotenv()
+        api_key = os.getenv('OPENAI_API_KEY')
+        
+        if not api_key:
+            raise ValueError("OpenAI API key not found in environment variables")
+            
+        client = OpenAI(api_key=api_key)
+        prompt = f"Create a photorealistic image inspired by the following words: {quote}. Do not show any of these words or any text at all. The scene should inspire and be visually pleasing. Focus on realism, with details. Choose a color palette that includes vibrant or pastel colors and a style that is smooth. The image should be visually balanced and optimized for display on both mobile and desktop screens."
+        print(prompt)
+        
+        response = client.images.generate(
+            model="dall-e-2",
+            prompt=prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1,
+        )
+        
+        image_url = response.data[0].url
+        return image_url
+        
+    except Exception as e:
+        return "https://via.placeholder.com/1024x1024.png?text=Image+Generation+Failed"
 
 @app.context_processor
 def inject_current_date():
@@ -16,8 +45,12 @@ def inject_current_date():
 
 @app.route('/')
 def daily_quote_and_image():
-    daily_image_url = get_daily_image_url()
+    # First get the quote
     quote_data = get_random_quote()
+    
+    daily_image_url = get_daily_image_url(quote_data['quote'])
+    # daily_image_url = "https://via.placeholder.com/1024x1024.png?text=Image+Generation+Disabled"
+    
     return render_template('daily_quote_and_image.html', 
                          daily_image_url=daily_image_url, 
                          quote=quote_data['quote'],
@@ -26,8 +59,8 @@ def daily_quote_and_image():
 
 @app.route('/tips')
 def tips():
-    parenting_tip = "Encourage open communication; listen actively to your children without immediate judgment."
-    nutrition_tip = "Incorporate more whole foods into your diet; aim for colorful fruits and vegetables daily."
+    parenting_tip = get_random_tip('parenting')
+    nutrition_tip = get_random_tip('nutrition')
     return render_template('tips.html', tip1=parenting_tip, tip2=nutrition_tip)
 
 @app.route('/podcasts')
@@ -49,8 +82,21 @@ def podcasts():
 
 @app.route('/about')
 def about():
-    description = "WifeApp (ver2) is dedicated to providing daily inspiration and tips for a balanced life."
-    return render_template('about.html', description=description)
+    linkedin_url = "https://www.linkedin.com/in/joaquin-de-rojas-598830268/"
+    X_url = "https://x.com/JdeRojasMD"
+    return render_template('about.html', linkedin_url=linkedin_url, X_url=X_url)
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.json
+    message = data.get('message')
+    tip = data.get('tip')
+    chat_type = data.get('type')
+    
+    response = chatbot.get_response(message, tip, chat_type)
+    return jsonify({'response': response})
+
+chatbot = ChatBot()
 
 if __name__ == '__main__':
     app.run(debug=True) 

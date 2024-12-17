@@ -13,12 +13,22 @@ body {
     padding: 0;
     background-color: #fafafa;
     color: #333; 
+    line-height: 1.6;
 }
 
 /* Typography */
-h1, h2, h3, header h1 {
+h1, h3, header h1 {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 500;
+}
+
+h2 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    line-height: 1.2;
 }
 
 /* Header Styles */
@@ -26,217 +36,913 @@ header {
     background: #cfa3a3;
     color: #fff;
     text-align: center;
-    padding: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 header h1 {
-    font-family: Garamond, Georgia, serif;
-    font-size: 3.0rem;
-    margin-top: 1.0rem;
-    margin-bottom: 0.5rem;
+    margin: 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.4rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    letter-spacing: 2px;
+    font-weight: 600;
+    background: linear-gradient(45deg, #fff, #ffecec);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: titleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+    from {
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    to {
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.3),
+                     0 0 15px rgba(255,255,255,0.4);
+    }
 }
 
 header .date {
-    font-size: 1rem;
-    color: #ffecec;
+    font-size: 1.2rem;
+    color: #ffffff;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin-top: 0.5rem;
+    animation: dateFadeIn 1s ease-out forwards;
+}
+
+@keyframes dateFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Navigation */
 nav {
     background: #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1.5rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+}
+
+nav {
     display: flex;
     justify-content: center;
-    padding: 0.75rem;
+    align-items: center;
 }
 
 nav a {
     font-family: 'Lato', sans-serif;
-    font-weight: 400;
-    margin: 0 1rem;
     text-decoration: none;
     color: #555;
-    font-weight: 600;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 0.8rem 1.5rem;
+    margin: 0 0.5rem;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    border-radius: 8px;
+    background: transparent;
+    position: relative;
 }
 
 nav a:hover {
     color: #b77c7c;
+    background: rgba(207, 163, 163, 0.1);
+    transform: translateY(-1px);
+}
+
+nav a::after {
+    content: '';
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #b77c7c;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+nav a:hover::after {
+    width: 60%;
 }
 
 /* Main Content */
 main {
-    padding: 1.5rem;
-    text-align: center;
-    background-color: #fff;
-    margin: 1.5rem auto;
+    padding: 2rem;
     max-width: 1200px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+    margin: 2rem auto;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
 }
 
-/* Homepage Specific */
+/* Hero Section */
+.hero-content {
+    text-align: center;
+    padding: 1rem 0;
+}
+
 .hero-content h2 {
-    font-size: 3.0rem;
+    font-size: 2.5rem;
     color: #cfa3a3;
     margin-bottom: 1rem;
-    line-height: 1.0;
+    line-height: 1.2;
     animation: colorDeepen 2s ease-in forwards;
     -webkit-animation: colorDeepen 2s ease-in forwards;
 }
 
 .hero-content p {
     color: #555;
-    margin-bottom: 3rem;
-    line-height: 1.0;
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin: 0 auto 1rem;
 }
 
 /* Quote Section */
+.quote-section {
+    margin: 1rem auto;
+    max-width: 800px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.quote-section h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #cfa3a3;
+}
+
 .quote-section blockquote {
     font-style: italic;
-    margin: 15px auto;
-    color: #000000;
-    line-height: 1.2rem;
-    max-width: 700px;
-    padding: 20px;
+    font-size: 1.4rem;
+    color: #333;
+    padding: 2.5rem;
     border-left: 4px solid #b77c7c;
     background: #f9f9f9;
-    border-radius: 5px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 150px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1.8;
+    position: relative;
+}
+
+.quote-section blockquote::before {
+    content: '"';
+    position: absolute;
+    top: 1rem;
+    left: 2rem;
+    font-size: 4rem;
+    color: #cfa3a3;
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1;
+    opacity: 0.5;
+}
+
+.quote-section blockquote::after {
+    content: '"';
+    position: absolute;
+    bottom: 1rem;
+    right: 2rem;
+    font-size: 4rem;
+    color: #cfa3a3;
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1;
+    opacity: 0.5;
+}
+
+.quote-section blockquote footer {
+    margin-top: 1.5rem;
+    color: #666;
+    font-style: normal;
+    font-size: 1.1rem;
+    text-align: center;
+    font-family: 'Lato', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.quote-section blockquote:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
 /* Image Section */
+.image-section {
+    margin: 3rem auto;
+    max-width: 800px;
+    padding: 1rem;
+    text-align: center;
+}
+
 .image-section img {
-    margin-top: 30px;
+    display: block;
+    margin: 0 auto;
     max-width: 100%;
     height: auto;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Podcast Styles */
-.podcast-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+.podcast-section {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.podcast-section {
-    margin-bottom: 40px;
+.podcast-section h2 {
+    text-align: center;
+    color: #cfa3a3;
+    margin: 2rem 0 2rem 0;
 }
 
 .podcast-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
 }
 
 .podcast-item {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
     background: #fff;
     border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .podcast-item:hover {
     transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 .podcast-thumbnail {
-    flex: 0 0 100px;
-    margin-right: 20px;
+    width: 200px;
+    height: 200px;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .podcast-thumbnail img {
-    width: 100px;
-    height: 100px;
-    border-radius: 5px;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.podcast-item:hover .podcast-thumbnail img {
+    transform: scale(1.05);
 }
 
 .podcast-info {
-    flex: 1;
-    text-align: left;
+    text-align: center;
+    width: 100%;
 }
 
 .podcast-info h3 {
-    margin: 0 0 10px 0;
+    font-size: 1.4rem;
+    margin: 0.8rem 0;
     color: #333;
-    font-size: 1.2em;
+    line-height: 1.4;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+}
+
+.podcast-item:hover .podcast-info h3 {
+    color: #b77c7c;
 }
 
 .episode-title {
     color: #666;
-    margin: 5px 0;
+    font-size: 1rem;
+    margin: 0.5rem 0;
     font-style: italic;
+    transition: color 0.3s ease;
 }
 
 .podcast-link {
     display: inline-block;
-    color: #1DB954;
+    margin-top: 1rem;
+    padding: 0.5rem 1.5rem;
+    background: #cfa3a3;
+    color: #fff;
     text-decoration: none;
-    margin-top: 10px;
-    font-weight: bold;
-    transition: color 0.2s ease;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 .podcast-link:hover {
-    color: #168f40;
+    background: #b77c7c;
+    transform: translateY(-2px);
+}
+
+.podcast-link:visited {
+    background: #b77c7c;
+}
+
+/* Responsive adjustments for podcasts */
+@media (max-width: 768px) {
+    .podcast-list {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .podcast-section {
+        padding: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .podcast-thumbnail {
+        width: 150px;
+        height: 150px;
+    }
+
+    .podcast-info h3 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes colorDeepen {
+    from { color: #cfa3a3; }
+    to { 
+        color: #b77c7c;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 1s ease-out forwards;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+
+    main {
+        padding: 1rem;
+        margin: 1rem;
+    }
+
+    .hero-content h2 {
+        font-size: 2rem;
+    }
+
+    .quote-section blockquote {
+        padding: 1.5rem;
+        font-size: 1.1rem;
+    }
+
+    .image-section {
+        padding: 0.5rem;
+    }
+
+    nav {
+        flex-wrap: wrap;
+        padding: 1rem 0;
+    }
+    
+    nav a {
+        padding: 0.5rem 1rem;
+        margin: 0.25rem;
+        font-size: 1rem;
+    }
+
+    h2 {
+        font-size: 2rem;
+    }
+
+    .hero-content h2 {
+        font-size: 2rem;
+    }
+
+    header .date {
+        font-size: 1.1rem;
+    }
 }
 
 /* Footer */
 footer {
+    text-align: center;
+    padding: 2rem;
     color: #888;
     font-size: 0.9rem;
-    text-align: center;
+    margin-top: 3rem;
+}
+
+/* Tips Styles */
+.tips-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    padding: 1rem;
+}
+
+.tip-card {
+    cursor: pointer;
+    position: relative;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tip-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.tip-content h2 {
+    position: relative;
     margin-top: 2.5rem;
 }
 
-/* Animations */
-.fade-in {
-    animation: fadeIn 1.5s ease-in forwards;
-    -webkit-animation: fadeIn 1.5s ease-in forwards;
-}
-
-.hero-content, .quote-section {
+.tip-content h2::before {
+    content: '👆\A Select this tip to learn more';  /* Changed text while keeping emoji and line break */
+    position: absolute;
+    top: -2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9rem;
+    color: #888;
     opacity: 0;
+    transition: opacity 0.3s ease;
+    width: 100%;
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    white-space: pre;
+    animation: none;
 }
 
-.image-section img {
-    opacity: 0;
+.tip-card:hover .tip-content h2::before {
+    opacity: 1;
+    animation: pulseText 1.5s ease-in-out infinite;
 }
 
-.image-section img.fade-in {
-    animation-delay: 0.6s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@-webkit-keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes colorDeepen {
-    from { 
-        color: #cfa3a3; 
+@keyframes pulseText {
+    0% {
+        transform: translateX(-50%) scale(1);
     }
-    to { 
-        color: #b77c7c;  /* Darker, bolder version of the pink */
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);  /* Subtle shadow for emphasis */
+    50% {
+        transform: translateX(-50%) scale(1.1);
+    }
+    100% {
+        transform: translateX(-50%) scale(1);
     }
 }
 
-@-webkit-keyframes colorDeepen {
-    from { 
-        color: #cfa3a3; 
+.tip-image {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+}
+
+.tip-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.tip-card:hover .tip-image img {
+    transform: scale(1.05);
+}
+
+.tip-content {
+    padding: 2rem;
+    text-align: center;
+}
+
+.tip-content h2 {
+    color: #cfa3a3;
+    margin-bottom: 1rem;
+}
+
+.tip-content p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #555;
+    margin: 0;
+    padding: 0 1rem;
+}
+
+/* Responsive adjustments for tips */
+@media (max-width: 768px) {
+    .tips-container {
+        gap: 2rem;
     }
-    to { 
-        color: #b77c7c;  /* Darker, bolder version of the pink */
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);  /* Subtle shadow for emphasis */
+
+    .tip-image {
+        height: 200px;
+    }
+
+    .tip-content {
+        padding: 1.5rem;
+    }
+
+    .tip-content p {
+        font-size: 1.1rem;
+        padding: 0;
+    }
+}
+
+/* About Page Styles */
+.about-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    text-align: center;
+    padding: 1rem;
+}
+
+.about-content {
+    background: linear-gradient(145deg, #fff 0%, #f8f8f8 100%);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 1px solid rgba(207, 163, 163, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-content:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.about-content h2 {
+    color: #cfa3a3;
+    margin: 0.5rem 0 1.5rem 0;
+    font-size: 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    line-height: 1.2;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+}
+
+.about-content p {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #555;
+    margin: 0;
+    white-space: pre-line;
+    padding: 0 1rem;
+}
+
+/* Social Links Container */
+.social-links {
+    margin-top: 0.5rem;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 500;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    margin: 0.5rem;
+    background: transparent;
+}
+
+.social-link.linkedin {
+    color: #0077b5;
+    border: 2px solid #0077b5;
+}
+
+.social-link.twitter {
+    color: #1DA1F2;
+    border: 2px solid #1DA1F2;
+}
+
+.social-link i {
+    font-size: 1.5rem;
+}
+
+.social-link.linkedin:hover {
+    color: #fff;
+    background: #0077b5;
+    border-color: #0077b5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 119, 181, 0.3);
+}
+
+.social-link.twitter:hover {
+    color: #fff;
+    background: #1DA1F2;
+    border-color: #1DA1F2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(29, 161, 242, 0.3);
+}
+
+@media (max-width: 768px) {
+    .about-container {
+        padding: 1rem;
+    }
+    
+    .about-content {
+        padding: 1.5rem;
+    }
+    
+    .about-content p {
+        font-size: 1.1rem;
+    }
+}
+
+/* Responsive adjustment for header */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2.8rem;
+    }
+}
+
+/* Chat Styles */
+.chat-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 400px;
+    height: 500px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.chat-header {
+    background: #cfa3a3;
+    color: #fff;
+    padding: 1rem;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.close-chat {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: #f9f9f9;
+}
+
+.message {
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    max-width: 85%;
+    line-height: 1.5;
+    white-space: pre-line;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.user-message {
+    background: #f0f0f0;
+    align-self: flex-end;
+    color: #333;
+    margin-left: 2rem;
+}
+
+.bot-message {
+    background: #f8e6e6;
+    align-self: flex-start;
+    color: #444;
+    margin-right: 2rem;
+    font-size: 1.05rem;
+}
+
+.bot-message p {
+    margin: 0.8rem 0;
+}
+
+.bot-message em {
+    display: block;
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    font-style: italic;
+    color: #666;
+}
+
+.chat-input-container {
+    padding: 1rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 0.5rem;
+}
+
+#chat-input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    outline: none;
+}
+
+#send-message {
+    background: #cfa3a3;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#send-message:hover {
+    background: #b77c7c;
+}
+
+.tip-card {
+    cursor: pointer;
+}
+
+.tip-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* Add responsive adjustments */
+@media (max-width: 768px) {
+    .chat-container {
+        width: 90%;
+        height: 80vh;
+        bottom: 5%;
+        right: 5%;
+    }
+}
+
+/* Add these to your existing Chat Styles */
+.thinking {
+    align-self: center;
+    color: #888;
+    padding: 1rem;
+    font-style: italic;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+.message strong {
+    font-weight: 600;
+    color: #333;
+}
+
+.message em {
+    font-style: italic;
+    color: #444;
+}
+
+.bot-message h3 {
+    font-size: 1.2rem;
+    color: #333;
+    margin: 1.5rem 0 0.8rem 0;
+    font-weight: 600;
+}
+
+.bot-message h4 {
+    font-size: 1.1rem;
+    color: #444;
+    margin: 1.2rem 0 0.6rem 0;
+    font-weight: 600;
+}
+
+.bot-message .list-item {
+    margin: 0.3rem 0;
+    padding-left: 1rem;
+}
+
+.bot-message .list-item strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.podcast-item:hover .episode-title {
+    color: #b77c7c;
+    transition: color 0.3s ease;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.header-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 10px;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+    transition: transform 0.3s ease;
+}
+
+.header-content:hover .header-logo {
+    transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-logo {
+        width: 50px;
+        height: 50px;
+    }
+    
+    header h1 {
+        font-size: 2.5rem;
+    }
+}
+
+.update-frequency {
+    display: inline-block;
+    color: #888;
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    background: rgba(207, 163, 163, 0.1);
+    animation: fadeIn 1s ease-out forwards;
+    font-family: 'Lato', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+/* Add to your existing media queries */
+@media (max-width: 768px) {
+    .update-frequency {
+        font-size: 0.8rem;
     }
 }

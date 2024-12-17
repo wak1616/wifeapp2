@@ -20,13 +20,13 @@ QUOTES = [
     {
         "quote": "A good laugh and a long sleep are the best cures in the doctor’s book.",
         "author": "Irish Proverb",
-        "year": null,
+        "year": None,
         "category": "health"
     },
     {
         "quote": "Exercise is a celebration of what your body can do. Not a punishment for what you ate.",
         "author": "Anonymous",
-        "year": null,
+        "year": None,
         "category": "fitness"
     },
     {
@@ -74,7 +74,7 @@ QUOTES = [
     {
         "quote": "It takes a village to raise a child.",
         "author": "African Proverb",
-        "year": null,
+        "year": None,
         "category": "parenting"
     },
     {
@@ -104,7 +104,7 @@ QUOTES = [
     {
         "quote": "He who has health has hope, and he who has hope has everything.",
         "author": "Arabian Proverb",
-        "year": null,
+        "year": None,
         "category": "health"
     },
     {
@@ -116,7 +116,7 @@ QUOTES = [
     {
         "quote": "You don’t have to be extreme, just consistent.",
         "author": "Anonymous",
-        "year": null,
+        "year": None,
         "category": "fitness"
     },
     {
@@ -140,7 +140,7 @@ QUOTES = [
     {
         "quote": "Hiking is not for the body, but for the soul.",
         "author": "Anonymous",
-        "year": null,
+        "year": None,
         "category": "hiking"
     },
     {
@@ -152,7 +152,7 @@ QUOTES = [
     {
         "quote": "Parenting is not about perfect behavior. It’s about perfect love.",
         "author": "Anonymous",
-        "year": null,
+        "year": None,
         "category": "parenting"
     },
     {
@@ -392,7 +392,7 @@ QUOTES = [
     {
         "quote": "If you want to go fast, go alone. If you want to go far, go together.",
         "author": "African Proverb",
-        "year": null,
+        "year": None,
         "category": "relationships"
     },
     {
@@ -488,7 +488,7 @@ QUOTES = [
     {
         "quote": "It’s not what we have in life but who we have in our life that matters.",
         "author": "Unknown",
-        "year": null,
+        "year": None,
         "category": "relationships"
     },
     {
@@ -506,7 +506,7 @@ QUOTES = [
     {
         "quote": "We don’t inherit the earth from our ancestors, we borrow it from our children.",
         "author": "Native American Proverb",
-        "year": null,
+        "year": None,
         "category": "global health"
     },
     {
@@ -686,7 +686,7 @@ QUOTES = [
     {
         "quote": "Fall seven times and stand up eight.",
         "author": "Japanese Proverb",
-        "year": null,
+        "year": None,
         "category": "inspiration"
     },
     {
@@ -1034,7 +1034,7 @@ QUOTES = [
     {
         "quote": "The pain you feel today will be the strength you feel tomorrow.",
         "author": "Anonymous",
-        "year": null,
+        "year": None,
         "category": "fitness"
     },
     {
@@ -1088,7 +1088,7 @@ QUOTES = [
     {
         "quote": "Fall seven times, stand up eight.",
         "author": "Japanese Proverb",
-        "year": null,
+        "year": None,
         "category": "inspiration"
     },
     {
@@ -1135,4 +1135,4 @@ def populate_db_from_data():
     conn.close()
 
 if __name__ == '__main__':
-    populate_db_from_data() 
+    populate_db_from_data()

@@ -1,6 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>About WifeApp (ver2)</h2>
-    <p>{{ description }}</p>
+<div class="about-container fade-in">
+    <h2 style="color: #cfa3a3;">About WifeApp</h2>
+    <div class="about-content">
+        <p>WifeApp (ver2) was made to provide daily inspiration, contemplation, and tips for a fulfilling and balanced life.</p>
+        <p>...</p>
+        <p>(and it was made especially for my wife)</p>
+    </div>
+</div>
+<div class="about-container fade-in">
+    <h2 style="color: #cfa3a3;">About the Creator</h2>
+    <div class="about-content">
+        <div class="social-links">
+            <a href="{{ linkedin_url }}" target="_blank" class="social-link linkedin">
+                <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="{{ X_url }}" target="_blank" class="social-link twitter">
+                <i class="fab fa-x-twitter"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
 {% endblock %} 
