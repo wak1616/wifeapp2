@@ -20,7 +20,7 @@ def get_daily_image_url(quote):
             raise ValueError("OpenAI API key not found in environment variables")
             
         client = OpenAI(api_key=api_key)
-        prompt = f"Create a photorealistic image inspired by the following words: {quote}. Do not show any of these words or any text at all. The scene should inspire and be visually pleasing. Focus on realism, with details. Choose a color palette that includes vibrant or pastel colors and a style that is smooth. The image should be visually balanced and optimized for display on both mobile and desktop screens."
+        prompt = f"Create a photorealistic image inspired by the following words: {quote}. The scene should be inspiring and visually pleasing. Focus on realism with rich details. The image should be visually balanced and optimized for display on both mobile and desktop screens."
         print(prompt)
         
         response = client.images.generate(
