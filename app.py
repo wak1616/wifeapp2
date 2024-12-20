@@ -1,9 +1,8 @@
 from flask import Flask, render_template, jsonify, request
-from datetime import datetime
+from datetime import datetime, date
 from scraping import get_all_spotify_podcasts
-from quotes_db import get_random_quote
-from tips_db import get_random_tip
-from dotenv import load_dotenv
+from quotes import get_daily_quote
+from tips import get_daily_tips
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -11,9 +10,13 @@ from chat import ChatBot
 
 app = Flask(__name__)
 
+# Only load dotenv in development
+if os.environ.get('FLASK_ENV') != 'production':
+    from dotenv import load_dotenv
+    load_dotenv()
+
 def get_daily_image_url(quote):
     try:
-        load_dotenv()
         api_key = os.getenv('OPENAI_API_KEY')
         
         if not api_key:
@@ -45,9 +48,7 @@ def inject_current_date():
 
 @app.route('/')
 def daily_quote_and_image():
-    # First get the quote
-    quote_data = get_random_quote()
-    
+    quote_data = get_daily_quote()
     daily_image_url = get_daily_image_url(quote_data['quote'])
     # daily_image_url = "https://via.placeholder.com/1024x1024.png?text=Image+Generation+Disabled"
     
@@ -59,9 +60,10 @@ def daily_quote_and_image():
 
 @app.route('/tips')
 def tips():
-    parenting_tip = get_random_tip('parenting')
-    nutrition_tip = get_random_tip('nutrition')
-    return render_template('tips.html', tip1=parenting_tip, tip2=nutrition_tip)
+    daily_tips = get_daily_tips()
+    return render_template('tips.html', 
+                         parenting_tip=daily_tips['parenting'],
+                         nutrition_tip=daily_tips['nutrition'])
 
 @app.route('/podcasts')
 def podcasts():

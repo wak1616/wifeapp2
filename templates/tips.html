@@ -3,23 +3,23 @@
 {% block content %}
 <div class="tips-container">
     <div class="update-frequency">Updated daily</div>
-    <div class="tip-card" onclick="openChat('{{ tip1 }}', 'parenting')">
+    <div class="tip-card" onclick="openChat('{{ parenting_tip }}', 'parenting')">
         <div class="tip-image">
             <img src="{{ url_for('static', filename='images/parenting.webp') }}" alt="Parenting Tip">
         </div>
         <div class="tip-content">
             <h2>Today's Parenting Tip</h2>
-            <p>{{ tip1 }}</p>
+            <p>{{ parenting_tip }}</p>
         </div>
     </div>
     
-    <div class="tip-card" onclick="openChat('{{ tip2 }}', 'nutrition')">
+    <div class="tip-card" onclick="openChat('{{ nutrition_tip }}', 'nutrition')">
         <div class="tip-image">
             <img src="{{ url_for('static', filename='images/nutrition.webp') }}" alt="Nutrition Tip">
         </div>
         <div class="tip-content">
             <h2>Today's Nutrition Tip</h2>
-            <p>{{ tip2 }}</p>
+            <p>{{ nutrition_tip }}</p>
         </div>
     </div>
 </div>

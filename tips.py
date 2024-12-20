@@ -1,3 +1,5 @@
+from datetime import datetime, date
+
 TIPS = [
     {
         "tip": "Encourage open communication; listen actively to your children without immediate judgment.",
@@ -976,24 +978,76 @@ TIPS = [
         "tip": "Follow the '2x10' strategy: spend 2 minutes per day for 10 consecutive days connecting with a challenging child about their interests. This evidence-based approach has been shown to significantly improve behavior and relationship quality.",
         "category": "parenting"
     }
+    # ... (keep all your existing tips)
 ]
 
-def populate_db_from_data():
-    from tips_db import init_db
-    import sqlite3
+def get_tip_for_date(category, target_date=None):
+    """Get tip for a specific date and category"""
+    if target_date is None:
+        target_date = date.today()
+        
+    # Filter tips by category
+    category_tips = [tip for tip in TIPS if tip['category'].lower() == category.lower()]
     
-    init_db()
-    conn = sqlite3.connect('instance/tips.db')
-    c = conn.cursor()
+    if not category_tips:
+        defaults = {
+            'parenting': "Remember to spend quality time with your children every day.",
+            'nutrition': "Try to eat a balanced diet with plenty of protein and fiber."
+        }
+        return defaults.get(category, f"No tips available for {category}")
     
-    for tip in TIPS:
-        c.execute('''
-            INSERT OR IGNORE INTO tips (tip, category)
-            VALUES (?, ?)
-        ''', (tip['tip'], tip['category']))
+    # Use January 1, 2024 as the start date
+    start_date = date(2024, 1, 1)
+    days_elapsed = (target_date - start_date).days
     
-    conn.commit()
-    conn.close()
+    # Use different offsets for different categories to prevent alignment
+    category_offsets = {
+        'parenting': 0,
+        'nutrition': len(TIPS) // 2  # Offset nutrition tips by half the total tips
+    }
+    
+    # Calculate index with offset
+    offset = category_offsets.get(category.lower(), 0)
+    tip_index = (days_elapsed + offset) % len(category_tips)
+    
+    return category_tips[tip_index]['tip']
 
+def get_daily_tips():
+    """Get tips for today"""
+    return {
+        'parenting': get_tip_for_date('parenting'),
+        'nutrition': get_tip_for_date('nutrition')
+    }
+
+def preview_future_tips(days=7):
+    """Preview tips for the next X days"""
+    today = date.today()
+    future_tips = []
+    
+    for i in range(days):
+        future_date = date.fromordinal(today.toordinal() + i)
+        tips = {
+            'date': future_date.strftime('%Y-%m-%d'),
+            'parenting': get_tip_for_date('parenting', future_date),
+            'nutrition': get_tip_for_date('nutrition', future_date)
+        }
+        future_tips.append(tips)
+    return future_tips
+
+def get_all_tips_by_category(category):
+    """Get all tips for a specific category"""
+    return [tip['tip'] for tip in TIPS if tip['category'].lower() == category.lower()]
+
+# Example usage:
 if __name__ == '__main__':
-    populate_db_from_data() 
+    # Get today's tips
+    today_tips = get_daily_tips()
+    print(f"Today's parenting tip: {today_tips['parenting']}")
+    print(f"Today's nutrition tip: {today_tips['nutrition']}")
+    
+    # Preview next week's tips
+    print("\nNext week's tips:")
+    for item in preview_future_tips(7):
+        print(f"\n{item['date']}:")
+        print(f"Parenting: {item['parenting']}")
+        print(f"Nutrition: {item['nutrition']}")

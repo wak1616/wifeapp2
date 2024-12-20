@@ -1,3 +1,5 @@
+from datetime import datetime, date
+
 QUOTES = [
     {
         "quote": "The greatest wealth is health.",
@@ -1117,22 +1119,47 @@ QUOTES = [
     }
 ]
 
-def populate_db_from_data():
-    from quotes_db import init_db
-    import sqlite3
+def get_quote_for_date(target_date=None):
+    """Get quote for a specific date, defaulting to today"""
+    if target_date is None:
+        target_date = date.today()
+        
+    # Use January 1, 2024 as the start date
+    start_date = date(2024, 1, 1)
+    days_elapsed = (target_date - start_date).days
     
-    init_db()
-    conn = sqlite3.connect('instance/quotes.db')
-    c = conn.cursor()
-    
-    for quote in QUOTES:
-        c.execute('''
-            INSERT OR IGNORE INTO quotes (quote, author, year, category)
-            VALUES (?, ?, ?, ?)
-        ''', (quote['quote'], quote['author'], quote['year'], quote['category']))
-    
-    conn.commit()
-    conn.close()
+    # Use modulo to cycle through the quotes list
+    quote_index = days_elapsed % len(QUOTES)
+    return QUOTES[quote_index]
 
+def get_daily_quote():
+    """Get today's quote"""
+    return get_quote_for_date()
+
+def preview_future_quotes(days=7):
+    """Preview quotes for the next X days"""
+    today = date.today()
+    future_quotes = []
+    for i in range(days):
+        future_date = date.fromordinal(today.toordinal() + i)
+        quote = get_quote_for_date(future_date)
+        future_quotes.append({
+            'date': future_date.strftime('%Y-%m-%d'),
+            'quote': quote
+        })
+    return future_quotes
+
+def get_quotes_by_category(category):
+    """Get all quotes for a specific category"""
+    return [q for q in QUOTES if q['category'].lower() == category.lower()]
+
+# Example usage:
 if __name__ == '__main__':
-    populate_db_from_data()
+    # Get today's quote
+    today_quote = get_daily_quote()
+    print(f"Today's quote: {today_quote['quote']} - {today_quote['author']}")
+    
+    # Preview next week's quotes
+    print("\nNext week's quotes:")
+    for item in preview_future_quotes(7):
+        print(f"{item['date']}: {item['quote']['quote']}") 
