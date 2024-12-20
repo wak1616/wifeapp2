@@ -4,6 +4,9 @@ from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
 import time
 import os
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 def get_all_spotify_podcasts():
     chrome_options = Options()
@@ -38,31 +41,53 @@ def get_all_spotify_podcasts():
     }
 
     try:
-        # Get Top Podcasts
-        print("Getting Top Podcasts...")
+        wait = WebDriverWait(driver, 10)
+        
+        # 1) Get Top Podcasts
         driver.get("https://podcastcharts.byspotify.com/")
         results['top_podcasts'] = scrape_current_page(driver)
 
-        # Get Top Episodes
-        print("\nGetting Top Episodes...")
-        category_dropdown = driver.find_element("id", "categoryDropdown")
+        # 2) Click "Top Episodes" - with scroll into view
+        category_dropdown = wait.until(EC.presence_of_element_located((By.ID, "categoryDropdown")))
+        driver.execute_script("arguments[0].scrollIntoView(true);", category_dropdown)
+        time.sleep(1)  # Brief pause after scroll
         category_dropdown.click()
+
         time.sleep(2)
-        episodes_button = driver.find_element("xpath", "//span[contains(text(), 'Top Episodes')]")
+
+        episodes_button = wait.until(EC.presence_of_element_located(
+            (By.XPATH, "//span[contains(text(), 'Top Episodes')]")))
+        driver.execute_script("arguments[0].scrollIntoView(true);", episodes_button)
+        time.sleep(1)
         episodes_button.click()
+
         time.sleep(2)
         results['top_episodes'] = scrape_current_page(driver)
 
-        # Get Top Health & Fitness Podcasts
-        print("\nGetting Health & Fitness...")
-        category_dropdown = driver.find_element("id", "categoryDropdown")
+        # 3) Click "Health & Fitness"
+        category_dropdown = wait.until(EC.presence_of_element_located((By.ID, "categoryDropdown")))
+        driver.execute_script("arguments[0].scrollIntoView(true);", category_dropdown)
+        time.sleep(1)
         category_dropdown.click()
+
         time.sleep(2)
-        fitness_button = driver.find_element("xpath", "//span[contains(text(), 'Health & Fitness')]")
+
+        fitness_button = wait.until(EC.presence_of_element_located(
+            (By.XPATH, "//span[contains(text(), 'Health & Fitness')]")))
+        driver.execute_script("arguments[0].scrollIntoView(true);", fitness_button)
+        time.sleep(1)
         fitness_button.click()
+        
         time.sleep(2)
         results['health_fitness'] = scrape_current_page(driver)
 
+    except Exception as e:
+        print(f"Error fetching podcasts: {str(e)}")
+        return {
+            'top_podcasts': [],
+            'top_episodes': [],
+            'health_fitness': []
+        }
     finally:
         driver.quit()
 
