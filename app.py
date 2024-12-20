@@ -14,12 +14,13 @@ from threading import Thread
 
 app = Flask(__name__)
 
-# Configure Flask-Caching
-cache = Cache(app, config={
-    'CACHE_TYPE': 'redis',
-    'CACHE_REDIS_URL': os.getenv('REDIS_URL', 'redis://localhost:6379/0'),
-    'CACHE_DEFAULT_TIMEOUT': 86400  # 24 hours in seconds
-})
+# Update to use REDISCLOUD_URL
+redis_url = os.getenv('REDISCLOUD_URL', 'redis://localhost:6379/0')
+app.config['CACHE_TYPE'] = 'redis'
+app.config['CACHE_REDIS_URL'] = redis_url
+app.config['CACHE_DEFAULT_TIMEOUT'] = 86400  # 24 hours
+
+cache = Cache(app)
 
 # No need for dotenv in production
 api_key = os.getenv('OPENAI_API_KEY')
