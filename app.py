@@ -83,10 +83,18 @@ def refresh_all_data():
     podcasts = get_all_spotify_podcasts()
     cache.set('podcasts', podcasts)
     
+    # Get and cache daily image URL
+    daily_image_url = get_daily_image_url()
+    cache.set('daily_image_url', daily_image_url)
+    
+    # Get and cache daily tips
+    daily_tips = get_daily_tips()
+    cache.set('daily_tips', daily_tips)
+    
     # Store refresh time
     cache.set('last_refresh_time', current_time)
     
-    return current_date, podcasts
+    return current_date, podcasts, daily_image_url, daily_tips
 
 @app.before_request
 def check_cache():
@@ -97,8 +105,11 @@ def check_cache():
 @app.route('/')
 def home():
     current_date = cache.get('current_date')
-    if current_date is None:
-        current_date, _ = refresh_all_data()
+    daily_image_url = cache.get('daily_image_url')
+    
+    if current_date is None or daily_image_url is None:
+        current_date, _, daily_image_url, _ = refresh_all_data()
+        
     return render_template('daily_quote_and_image.html', 
                          daily_image_url=daily_image_url, 
                          quote=quote_data['quote'],
@@ -108,9 +119,13 @@ def home():
 @app.route('/tips')
 def tips():
     current_date = cache.get('current_date')
-    if current_date is None:
-        current_date, _ = refresh_all_data()
+    daily_tips = cache.get('daily_tips')
+    
+    if current_date is None or daily_tips is None:
+        current_date, _, _, daily_tips = refresh_all_data()
+        
     return render_template('tips.html', 
+                         current_date=current_date,
                          parenting_tip=daily_tips['parenting'],
                          nutrition_tip=daily_tips['nutrition'])
 
@@ -118,7 +133,7 @@ def tips():
 def podcasts():
     podcast_data = cache.get('podcasts')
     if podcast_data is None:
-        _, podcast_data = refresh_all_data()
+        _, podcast_data, _, _ = refresh_all_data()
     return render_template('podcasts.html', 
                          top_podcasts=podcast_data['top_podcasts'],
                          top_episodes=podcast_data['top_episodes'],
@@ -128,7 +143,7 @@ def podcasts():
 def about():
     current_date = cache.get('current_date')
     if current_date is None:
-        current_date, _ = refresh_all_data()
+        current_date, _, _, _ = refresh_all_data()
     linkedin_url = "https://www.linkedin.com/in/joaquin-de-rojas-598830268/"
     X_url = "https://x.com/JdeRojasMD"
     return render_template('about.html', linkedin_url=linkedin_url, X_url=X_url)
