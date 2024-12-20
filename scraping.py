@@ -22,8 +22,7 @@ def get_all_spotify_podcasts():
     if os.environ.get('GOOGLE_CHROME_BIN'):
         chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
     
-    chrome_driver_path = os.environ.get('CHROMEDRIVER_PATH', 'chromedriver')
-    service = Service(executable_path=chrome_driver_path)
+    service = Service()
     
     # Pass the service object to Chrome
     driver = webdriver.Chrome(service=service, options=chrome_options)
