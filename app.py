@@ -8,13 +8,17 @@ from openai import OpenAI
 from chat import ChatBot
 import pytz
 from flask_caching import Cache
+import redis  # for persistent caching (that persists between dyno restarts; SimpleCache just stores everything in memory)
+from threading import Thread
+
 
 app = Flask(__name__)
 
 # Configure Flask-Caching
 cache = Cache(app, config={
-    'CACHE_TYPE': 'SimpleCache',
-    'CACHE_DEFAULT_TIMEOUT': 0  # No timeout, we'll manually invalidate
+    'CACHE_TYPE': 'redis',
+    'CACHE_REDIS_URL': os.getenv('REDIS_URL', 'redis://localhost:6379/0'),
+    'CACHE_DEFAULT_TIMEOUT': 86400  # 24 hours in seconds
 })
 
 # No need for dotenv in production
@@ -81,30 +85,39 @@ def get_initial_image_url():
     cached_image = cache.get('daily_image_url')
     return cached_image if cached_image else "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"
 
+def generate_image_async(quote):
+    """Generate image in background and cache it"""
+    try:
+        daily_image_url = get_daily_image_url(quote)
+        if daily_image_url and 'placeholder.com' not in daily_image_url:
+            cache.set('daily_image_url', daily_image_url, timeout=86400)
+    except Exception as e:
+        print(f"Error in async image generation: {str(e)}")
+
 def refresh_all_data():
-    """Refresh all cached data except image"""
+    """Refresh all cached data"""
     try:
         eastern = pytz.timezone('America/New_York')
         current_time = datetime.now(eastern)
         
-        # Get and cache the date
-        current_date = current_time.strftime('%B %d, %Y')
-        cache.set('current_date', current_date)
-        
-        # Get and cache quote
+        # Get and cache quote first
         quote_data = get_daily_quote()
-        cache.set('quote_data', quote_data)
+        cache.set('quote_data', quote_data, timeout=86400)
         
-        # Get and cache tips
+        # Start image generation in background
+        Thread(target=generate_image_async, args=(quote_data['quote'],)).start()
+        
+        # Cache other data
+        current_date = current_time.strftime('%B %d, %Y')
+        cache.set('current_date', current_date, timeout=86400)
         daily_tips = get_daily_tips()
-        cache.set('daily_tips', daily_tips)
+        cache.set('daily_tips', daily_tips, timeout=86400)
         
         # Get and cache podcasts
         podcasts = get_all_spotify_podcasts()
-        cache.set('podcasts', podcasts)
+        cache.set('podcasts', podcasts, timeout=86400)
         
-        # Store refresh time
-        cache.set('last_refresh_time', current_time)
+        cache.set('last_refresh_time', current_time, timeout=86400)
         
         return current_date, podcasts, daily_tips, quote_data
         
@@ -132,10 +145,10 @@ def home():
     if quote_data is None:
         _, _, _, quote_data = refresh_all_data()
     
-    # Don't use cached image if it's a placeholder
-    if not daily_image_url or 'placeholder.com' in daily_image_url:
+    # Use cached image or placeholder
+    if not daily_image_url:
         daily_image_url = "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"
-        
+    
     return render_template('daily_quote_and_image.html', 
                          daily_image_url=daily_image_url,
                          quote=quote_data['quote'],
@@ -223,6 +236,16 @@ def check_image():
     except Exception as e:
         print(f"Error checking image: {str(e)}")
         return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Error+Checking"})
+
+@app.before_first_request
+def initialize_cache():
+    """Ensure cache is populated on startup"""
+    if should_refresh_cache():
+        refresh_all_data()
+        # Generate initial image if needed
+        quote_data = cache.get('quote_data')
+        if quote_data and not cache.get('daily_image_url'):
+            get_daily_image_url(quote_data['quote'])
 
 if __name__ == '__main__':
     # Initial cache population
