@@ -66,7 +66,11 @@ def home():
     # Format the date
     current_date = eastern_time.strftime('%B %d, %Y')
     
-    return render_template('index.html', current_date=current_date)
+    return render_template('daily_quote_and_image.html', 
+                         daily_image_url=daily_image_url, 
+                         quote=quote_data['quote'],
+                         author=quote_data['author'],
+                         year=quote_data['year'])
 
 @app.route('/tips')
 def tips():
