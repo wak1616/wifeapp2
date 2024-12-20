@@ -10,6 +10,7 @@ import pytz
 from flask_caching import Cache
 import redis  # for persistent caching (that persists between dyno restarts; SimpleCache just stores everything in memory)
 from threading import Thread
+import requests
 
 
 app = Flask(__name__)
@@ -86,12 +87,37 @@ def get_initial_image_url():
     cached_image = cache.get('daily_image_url')
     return cached_image if cached_image else "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"
 
+def save_daily_image(image_url):
+    """Download image from OpenAI and save to static folder"""
+    try:
+        # Download image from OpenAI
+        response = requests.get(image_url)
+        
+        # Ensure static/images directory exists
+        os.makedirs('static/images', exist_ok=True)
+        
+        # Save with fixed name
+        image_path = 'static/images/daily_image.png'
+        
+        # Save image (will overwrite existing file)
+        with open(image_path, 'wb') as f:
+            f.write(response.content)
+        
+        # Return local URL path
+        return '/static/images/daily_image.png'
+    except Exception as e:
+        print(f"Error saving image: {str(e)}")
+        return None
+
 def generate_image_async(quote):
     """Generate image in background and cache it"""
     try:
-        daily_image_url = get_daily_image_url(quote)
-        if daily_image_url and 'placeholder.com' not in daily_image_url:
-            cache.set('daily_image_url', daily_image_url, timeout=86400)
+        temp_image_url = get_daily_image_url(quote)
+        if temp_image_url and 'placeholder.com' not in temp_image_url:
+            # Save image locally and get local path
+            local_path = save_daily_image(temp_image_url)
+            if local_path:
+                cache.set('daily_image_url', local_path, timeout=86400)
     except Exception as e:
         print(f"Error in async image generation: {str(e)}")
 
