@@ -6,6 +6,7 @@ from tips import get_daily_tips
 import os
 from openai import OpenAI
 from chat import ChatBot
+import pytz
 
 app = Flask(__name__)
 
@@ -54,16 +55,18 @@ def inject_current_date():
     return dict(current_date=current_date)
 
 @app.route('/')
-def daily_quote_and_image():
-    quote_data = get_daily_quote()
-    daily_image_url = get_daily_image_url(quote_data['quote'])
-    # daily_image_url = "https://via.placeholder.com/1024x1024.png?text=Image+Generation+Disabled"
+def home():
+    # Get current UTC time from datetime
+    utc_now = datetime.now(pytz.UTC)
     
-    return render_template('daily_quote_and_image.html', 
-                         daily_image_url=daily_image_url, 
-                         quote=quote_data['quote'],
-                         author=quote_data['author'],
-                         year=quote_data['year'])
+    # Convert to US Eastern Time
+    eastern = pytz.timezone('America/New_York')
+    eastern_time = utc_now.astimezone(eastern)
+    
+    # Format the date
+    current_date = eastern_time.strftime('%B %d, %Y')
+    
+    return render_template('index.html', current_date=current_date)
 
 @app.route('/tips')
 def tips():
