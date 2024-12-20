@@ -1,16 +1,29 @@
-from apscheduler.schedulers.blocking import BlockingScheduler
-import requests
-import os
+from app import refresh_all_data
+import schedule
+import time
+import pytz
+from datetime import datetime, timedelta
 
-sched = BlockingScheduler()
+def job():
+    print(f"Running scheduled refresh at {datetime.now(pytz.timezone('America/New_York'))}")
+    refresh_all_data()
 
-@sched.scheduled_job('cron', hour=0, minute=0, timezone='America/New_York')
-def scheduled_refresh():
-    """Trigger a cache refresh at midnight EST"""
-    # Get the app's URL from environment variable
-    app_url = os.environ.get('APP_URL', 'https://your-app-name.herokuapp.com')
+# Calculate time until next midnight EST
+def get_seconds_until_midnight():
+    eastern = pytz.timezone('America/New_York')
+    now = datetime.now(eastern)
+    midnight = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    return (midnight - now).seconds
+
+# Schedule the job
+schedule.every().day.at("00:00").do(job)
+
+if __name__ == "__main__":
+    # Run immediately if we're starting up after midnight
+    if should_refresh_cache():
+        job()
     
-    # Make a request to trigger cache refresh
-    requests.get(f"{app_url}/")
-
-sched.start() 
+    while True:
+        schedule.run_pending()
+        time.sleep(30)  # Check every 30 seconds
+ 
