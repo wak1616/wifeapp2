@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
 import time
 import os
@@ -17,8 +18,15 @@ def get_all_spotify_podcasts():
     # Sets a specific user agent to look like a regular browser to help the host from blocking.
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
     
+    # Add binary location if set in environment
+    if os.environ.get('GOOGLE_CHROME_BIN'):
+        chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
+    
     chrome_driver_path = os.environ.get('CHROMEDRIVER_PATH', 'chromedriver')
-    driver = webdriver.Chrome(executable_path=chrome_driver_path, options=chrome_options)
+    service = Service(executable_path=chrome_driver_path)
+    
+    # Pass the service object to Chrome
+    driver = webdriver.Chrome(service=service, options=chrome_options)
     
     # Sets a standard desktop resolution to ensure consistent rendering of responsive websites.
     driver.set_window_size(1920, 1080)
