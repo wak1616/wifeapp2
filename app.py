@@ -237,16 +237,6 @@ def check_image():
         print(f"Error checking image: {str(e)}")
         return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Error+Checking"})
 
-@app.before_first_request
-def initialize_cache():
-    """Ensure cache is populated on startup"""
-    if should_refresh_cache():
-        refresh_all_data()
-        # Generate initial image if needed
-        quote_data = cache.get('quote_data')
-        if quote_data and not cache.get('daily_image_url'):
-            get_daily_image_url(quote_data['quote'])
-
 if __name__ == '__main__':
     # Initial cache population
     refresh_all_data()
