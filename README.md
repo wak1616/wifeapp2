@@ -1,21 +1,35 @@
 # WifeApp2
 
-A personalized web application providing daily inspiration, tips, and resources for a balanced life. Features daily quotes with AI-generated images, parenting and nutrition tips with expert chat functionality, and curated podcast recommendations.
+A personalized Flaskweb application providing daily inspiration, tips, and resources for a balanced life. Features daily quotes with AI-generated images, parenting and nutrition tips with expert chat functionality, and curated podcast recommendations.
 
 ## Features
 
-- 🎯 Daily inspirational quotes with AI-generated images
-- 💭 Interactive expert chat for parenting and nutrition advice
-- 🎧 Weekly updated podcast recommendations
-- 📱 Responsive design for all devices
+- **Daily Quote & AI Image**: Each day features an inspiring quote paired with a DALL-E generated image that visually represents the quote's message
+- **Daily Tips**: 
+  - Parenting advice for growing families
+  - Nutrition guidance for healthy living
+- **Podcast Recommendations**: 
+  - Top trending podcasts
+  - Featured health & fitness episodes
+  - Popular episode highlights
+- **Interactive Chat**: AI-powered chat system for discussing the daily tips and getting personalized advice
+- **Automatic Daily Refresh**: Content automatically updates daily at midnight EST
 
-## Tech Stack
+## Technical Stack
 
-- Backend: Python/Flask
-- Frontend: HTML, CSS, JavaScript
-- Database: SQLite
-- AI Integration: OpenAI (GPT-4, DALL-E)
-- External APIs: Spotify Web Scraping
+- **Backend**: Python/Flask
+- **AI Integration**: OpenAI API (DALL-E 2 for images, GPT for chat)
+- **Caching**: Redis for persistent data storage
+- **Frontend**: HTML/CSS/JavaScript
+- **Deployment**: Heroku
+
+## Environment Variables
+
+Required environment variables:
+
+```
+OPENAI_API_KEY=your_openai_api_key
+```
 
 ## Setup
 
@@ -36,15 +50,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Create `.env` file with required environment variables:
-```
-OPENAI_API_KEY=your_openai_api_key
-```
 
-5. Initialize the databases:
-```bash
-./reset_dbs.sh
-```
 
 ## Running Locally
 
@@ -74,13 +80,7 @@ python app.py
 ## Update Schedule
 - Quotes & Images: Daily updates
 - Tips: Daily updates
-- Podcasts: Weekly updates
-
-## Environment Variables
-Create a `.env` file with the following:
-```
-OPENAI_API_KEY=your_openai_api_key
-```
+- Podcasts: Daily updates
 
 ## Contributing
 This is a personal project, but suggestions and improvements are welcome.
