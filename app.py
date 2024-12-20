@@ -125,6 +125,7 @@ def check_cache():
 
 @app.route('/')
 def home():
+    current_date = cache.get('current_date')
     quote_data = cache.get('quote_data')
     daily_image_url = cache.get('daily_image_url')
     
@@ -186,22 +187,42 @@ chatbot = ChatBot()
 def generate_image():
     """Endpoint to generate and cache the daily image"""
     try:
+        print("Starting image generation process...")
         quote_data = cache.get('quote_data')
+        
         if not quote_data:
+            print("No quote data found in cache")
             return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Quote+Not+Found"})
-            
+        
+        print(f"Generating image for quote: {quote_data['quote'][:50]}...")
         daily_image_url = get_daily_image_url(quote_data['quote'])
-        cache.set('daily_image_url', daily_image_url)
-        return jsonify({'image_url': daily_image_url})
+        
+        if daily_image_url and 'placeholder.com' not in daily_image_url:
+            print(f"Successfully generated image: {daily_image_url[:50]}...")
+            cache.set('daily_image_url', daily_image_url)
+            return jsonify({'image_url': daily_image_url})
+        else:
+            print("Image generation returned placeholder or None")
+            return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Generation+Failed"})
+            
     except Exception as e:
-        print(f"Error generating image: {str(e)}")
-        return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Image+Generation+Failed"})
+        print(f"Error in generate_image: {str(e)}")
+        return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Error+Occurred"})
 
 @app.route('/check_image')
 def check_image():
     """Check if image is ready"""
-    image_url = cache.get('daily_image_url')
-    return jsonify({'image_url': image_url if image_url else "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"})
+    try:
+        print("Checking image status...")
+        image_url = cache.get('daily_image_url')
+        print(f"Current cached image URL: {image_url[:50] if image_url else 'None'}")
+        
+        if image_url and 'placeholder.com' not in image_url:
+            return jsonify({'image_url': image_url})
+        return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"})
+    except Exception as e:
+        print(f"Error checking image: {str(e)}")
+        return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Error+Checking"})
 
 if __name__ == '__main__':
     # Initial cache population

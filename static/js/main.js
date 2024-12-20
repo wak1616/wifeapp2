@@ -212,27 +212,47 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add image checking functionality if we're on the home page
     const dailyImage = document.getElementById('daily-image');
     if (dailyImage) {
+        console.log('Initializing image generation process...');
+        
         // First, trigger image generation
-        fetch('/generate_image');
+        fetch('/generate_image')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Image generation response:', data);
+                if (data.image_url && !data.image_url.includes('placeholder.com')) {
+                    dailyImage.src = data.image_url;
+                }
+            })
+            .catch(error => console.error('Error generating image:', error));
 
         function checkImage() {
+            console.log('Checking for image update...');
             fetch('/check_image')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.image_url && data.image_url !== dailyImage.src) {
+                    console.log('Image check response:', data);
+                    if (data.image_url && 
+                        !data.image_url.includes('placeholder.com') && 
+                        data.image_url !== dailyImage.src) {
+                        console.log('Updating image to:', data.image_url);
                         dailyImage.src = data.image_url;
+                        return true;
                     }
-                });
+                    return false;
+                })
+                .catch(error => console.error('Error checking image:', error));
         }
 
-        // Check every 5 seconds for the first minute
+        // Check more frequently initially
         let checkCount = 0;
         const imageCheck = setInterval(() => {
-            checkImage();
-            checkCount++;
-            if (checkCount >= 12) { // Stop after 1 minute (12 * 5 seconds)
+            if (checkCount < 12) { // First minute: every 5 seconds
+                checkImage();
+            } else {
+                console.log('Stopping image checks');
                 clearInterval(imageCheck);
             }
+            checkCount++;
         }, 5000);
     }
 });
