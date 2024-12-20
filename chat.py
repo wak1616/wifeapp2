@@ -1,12 +1,13 @@
-from openai import OpenAI
-from dotenv import load_dotenv
 import os
-
-load_dotenv()
+from openai import OpenAI
 
 class ChatBot:
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY not found in environment variables")
+        
+        self.client = OpenAI(api_key=api_key)
         self.conversation_history = []
         self.follow_up_used = False
         self.tips_clicked = set()
