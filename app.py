@@ -5,7 +5,6 @@ from quotes import get_daily_quote
 from tips import get_daily_tips
 import os
 from openai import OpenAI
-from dotenv import load_dotenv
 from chat import ChatBot
 
 app = Flask(__name__)
