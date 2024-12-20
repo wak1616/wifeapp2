@@ -9,10 +9,18 @@ from chat import ChatBot
 
 app = Flask(__name__)
 
+# No need for dotenv in production
+api_key = os.getenv('OPENAI_API_KEY')
+if not api_key:
+    raise ValueError("OPENAI_API_KEY not found in environment variables")
+
 # Only load dotenv in development
 if os.environ.get('FLASK_ENV') != 'production':
-    from dotenv import load_dotenv
-    load_dotenv()
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
 
 def get_daily_image_url(quote):
     try:
