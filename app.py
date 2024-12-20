@@ -7,8 +7,15 @@ import os
 from openai import OpenAI
 from chat import ChatBot
 import pytz
+from flask_caching import Cache
 
 app = Flask(__name__)
+
+# Configure Flask-Caching
+cache = Cache(app, config={
+    'CACHE_TYPE': 'SimpleCache',
+    'CACHE_DEFAULT_TIMEOUT': 0  # No timeout, we'll manually invalidate
+})
 
 # No need for dotenv in production
 api_key = os.getenv('OPENAI_API_KEY')
@@ -54,18 +61,44 @@ def inject_current_date():
     current_date = datetime.now().strftime("%B %d, %Y")
     return dict(current_date=current_date)
 
+def should_refresh_cache():
+    """Check if we need to refresh the cache (true if last refresh was before today's midnight EST)"""
+    eastern = pytz.timezone('America/New_York')
+    now = datetime.now(eastern)
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    last_refresh = cache.get('last_refresh_time')
+    return last_refresh is None or last_refresh < midnight
+
+def refresh_all_data():
+    """Refresh all cached data"""
+    eastern = pytz.timezone('America/New_York')
+    current_time = datetime.now(eastern)
+    
+    # Get and cache the date
+    current_date = current_time.strftime('%B %d, %Y')
+    cache.set('current_date', current_date)
+    
+    # Get and cache podcasts
+    podcasts = get_all_spotify_podcasts()
+    cache.set('podcasts', podcasts)
+    
+    # Store refresh time
+    cache.set('last_refresh_time', current_time)
+    
+    return current_date, podcasts
+
+@app.before_request
+def check_cache():
+    """Check if cache needs refresh before each request"""
+    if should_refresh_cache():
+        refresh_all_data()
+
 @app.route('/')
 def home():
-    # Get current UTC time from datetime
-    utc_now = datetime.now(pytz.UTC)
-    
-    # Convert to US Eastern Time
-    eastern = pytz.timezone('America/New_York')
-    eastern_time = utc_now.astimezone(eastern)
-    
-    # Format the date
-    current_date = eastern_time.strftime('%B %d, %Y')
-    
+    current_date = cache.get('current_date')
+    if current_date is None:
+        current_date, _ = refresh_all_data()
     return render_template('daily_quote_and_image.html', 
                          daily_image_url=daily_image_url, 
                          quote=quote_data['quote'],
@@ -74,30 +107,28 @@ def home():
 
 @app.route('/tips')
 def tips():
-    daily_tips = get_daily_tips()
+    current_date = cache.get('current_date')
+    if current_date is None:
+        current_date, _ = refresh_all_data()
     return render_template('tips.html', 
                          parenting_tip=daily_tips['parenting'],
                          nutrition_tip=daily_tips['nutrition'])
 
 @app.route('/podcasts')
 def podcasts():
-    # Get all podcast data
-    try:
-        all_podcasts = get_all_spotify_podcasts()
-        return render_template('podcasts.html', 
-                             top_podcasts=all_podcasts['top_podcasts'],
-                             top_episodes=all_podcasts['top_episodes'],
-                             health_fitness=all_podcasts['health_fitness'])
-    except Exception as e:
-        print(f"Error fetching podcasts: {e}")
-        # Return empty lists if there's an error
-        return render_template('podcasts.html', 
-                             top_podcasts=[],
-                             top_episodes=[],
-                             health_fitness=[])
+    podcast_data = cache.get('podcasts')
+    if podcast_data is None:
+        _, podcast_data = refresh_all_data()
+    return render_template('podcasts.html', 
+                         top_podcasts=podcast_data['top_podcasts'],
+                         top_episodes=podcast_data['top_episodes'],
+                         health_fitness=podcast_data['health_fitness'])
 
 @app.route('/about')
 def about():
+    current_date = cache.get('current_date')
+    if current_date is None:
+        current_date, _ = refresh_all_data()
     linkedin_url = "https://www.linkedin.com/in/joaquin-de-rojas-598830268/"
     X_url = "https://x.com/JdeRojasMD"
     return render_template('about.html', linkedin_url=linkedin_url, X_url=X_url)
@@ -115,4 +146,6 @@ def chat():
 chatbot = ChatBot()
 
 if __name__ == '__main__':
+    # Initial cache population
+    refresh_all_data()
     app.run(debug=True) 
