@@ -83,8 +83,10 @@ def refresh_all_data():
     podcasts = get_all_spotify_podcasts()
     cache.set('podcasts', podcasts)
     
-    # Get and cache daily image URL
-    daily_image_url = get_daily_image_url()
+    # Get and cache daily image URL and quote
+    quote_data = get_daily_quote()
+    cache.set('quote_data', quote_data)
+    daily_image_url = get_daily_image_url(quote_data['quote'])
     cache.set('daily_image_url', daily_image_url)
     
     # Get and cache daily tips
@@ -94,7 +96,7 @@ def refresh_all_data():
     # Store refresh time
     cache.set('last_refresh_time', current_time)
     
-    return current_date, podcasts, daily_image_url, daily_tips
+    return current_date, podcasts, daily_image_url, daily_tips, quote_data
 
 @app.before_request
 def check_cache():
@@ -106,12 +108,13 @@ def check_cache():
 def home():
     current_date = cache.get('current_date')
     daily_image_url = cache.get('daily_image_url')
+    quote_data = cache.get('quote_data')
     
-    if current_date is None or daily_image_url is None:
-        current_date, _, daily_image_url, _ = refresh_all_data()
+    if current_date is None or daily_image_url is None or quote_data is None:
+        current_date, _, daily_image_url, _, quote_data = refresh_all_data()
         
     return render_template('daily_quote_and_image.html', 
-                         daily_image_url=daily_image_url, 
+                         daily_image_url=daily_image_url,
                          quote=quote_data['quote'],
                          author=quote_data['author'],
                          year=quote_data['year'])
@@ -122,7 +125,7 @@ def tips():
     daily_tips = cache.get('daily_tips')
     
     if current_date is None or daily_tips is None:
-        current_date, _, _, daily_tips = refresh_all_data()
+        current_date, _, _, daily_tips, _ = refresh_all_data()
         
     return render_template('tips.html', 
                          current_date=current_date,
