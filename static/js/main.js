@@ -212,6 +212,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add image checking functionality if we're on the home page
     const dailyImage = document.getElementById('daily-image');
     if (dailyImage) {
+        // First, trigger image generation
+        fetch('/generate_image');
+
         function checkImage() {
             fetch('/check_image')
                 .then(response => response.json())

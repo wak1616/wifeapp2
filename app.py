@@ -105,24 +105,13 @@ def refresh_all_data():
         # Store refresh time
         cache.set('last_refresh_time', current_time)
         
-        # Start background image generation
-        try:
-            daily_image_url = get_daily_image_url(quote_data['quote'])
-            cache.set('daily_image_url', daily_image_url)
-        except Exception as e:
-            print(f"Error during image generation: {str(e)}")
-            # Keep existing image or use default
-            if not cache.get('daily_image_url'):
-                cache.set('daily_image_url', "https://via.placeholder.com/1024x1024.png?text=Daily+Inspiration")
-        
-        return current_date, podcasts, get_initial_image_url(), daily_tips, quote_data
+        return current_date, podcasts, daily_tips, quote_data
         
     except Exception as e:
         print(f"Error in refresh_all_data: {str(e)}")
         return (
             datetime.now(eastern).strftime('%B %d, %Y'),
             [],
-            "https://via.placeholder.com/1024x1024.png?text=Daily+Inspiration",
             {'parenting': 'Tip unavailable', 'nutrition': 'Tip unavailable'},
             {'quote': 'Quote unavailable', 'author': '', 'year': ''}
         )
@@ -137,10 +126,13 @@ def check_cache():
 def home():
     current_date = cache.get('current_date')
     quote_data = cache.get('quote_data')
-    daily_image_url = get_initial_image_url()
+    daily_image_url = cache.get('daily_image_url')
     
     if current_date is None or quote_data is None:
-        current_date, _, daily_image_url, _, quote_data = refresh_all_data()
+        current_date, _, daily_tips, quote_data = refresh_all_data()
+    
+    if not daily_image_url:
+        daily_image_url = "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"
         
     return render_template('daily_quote_and_image.html', 
                          daily_image_url=daily_image_url,
@@ -192,11 +184,26 @@ def chat():
 
 chatbot = ChatBot()
 
-# Add a route to check/update image status
+@app.route('/generate_image')
+def generate_image():
+    """Endpoint to generate and cache the daily image"""
+    try:
+        quote_data = cache.get('quote_data')
+        if not quote_data:
+            return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Quote+Not+Found"})
+            
+        daily_image_url = get_daily_image_url(quote_data['quote'])
+        cache.set('daily_image_url', daily_image_url)
+        return jsonify({'image_url': daily_image_url})
+    except Exception as e:
+        print(f"Error generating image: {str(e)}")
+        return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Image+Generation+Failed"})
+
 @app.route('/check_image')
 def check_image():
+    """Check if image is ready"""
     image_url = cache.get('daily_image_url')
-    return jsonify({'image_url': image_url if image_url else get_initial_image_url()})
+    return jsonify({'image_url': image_url if image_url else "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"})
 
 if __name__ == '__main__':
     # Initial cache population
