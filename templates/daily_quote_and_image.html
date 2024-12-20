@@ -18,7 +18,7 @@
 <div class="image-section">
     {% if daily_image_url %}
         <img src="{{ daily_image_url }}" alt="Daily Generative Image" 
-             onerror="this.onerror=null; this.src='https://via.placeholder.com/1024x1024.png?text=Image+Loading+Failed';">
+             onerror="this.onerror=null; this.src='https://via.placeholder.com/1024x1024.png?text=Image+Loading+Failed';" id="daily-image">
     {% else %}
         <img src="https://via.placeholder.com/1024x1024.png?text=No+Image+Available" 
              alt="No image available">

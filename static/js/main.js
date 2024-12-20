@@ -208,4 +208,28 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
+
+    // Add image checking functionality if we're on the home page
+    const dailyImage = document.getElementById('daily-image');
+    if (dailyImage) {
+        function checkImage() {
+            fetch('/check_image')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.image_url && data.image_url !== dailyImage.src) {
+                        dailyImage.src = data.image_url;
+                    }
+                });
+        }
+
+        // Check every 5 seconds for the first minute
+        let checkCount = 0;
+        const imageCheck = setInterval(() => {
+            checkImage();
+            checkCount++;
+            if (checkCount >= 12) { // Stop after 1 minute (12 * 5 seconds)
+                clearInterval(imageCheck);
+            }
+        }, 5000);
+    }
 });

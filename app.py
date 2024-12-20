@@ -75,8 +75,13 @@ def should_refresh_cache():
     last_refresh = cache.get('last_refresh_time')
     return last_refresh is None or last_refresh < midnight
 
+def get_initial_image_url():
+    """Get a cached image or return default"""
+    cached_image = cache.get('daily_image_url')
+    return cached_image if cached_image else "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"
+
 def refresh_all_data():
-    """Refresh all cached data"""
+    """Refresh all cached data except image"""
     try:
         eastern = pytz.timezone('America/New_York')
         current_time = datetime.now(eastern)
@@ -85,7 +90,7 @@ def refresh_all_data():
         current_date = current_time.strftime('%B %d, %Y')
         cache.set('current_date', current_date)
         
-        # Get and cache quote first
+        # Get and cache quote
         quote_data = get_daily_quote()
         cache.set('quote_data', quote_data)
         
@@ -97,23 +102,23 @@ def refresh_all_data():
         podcasts = get_all_spotify_podcasts()
         cache.set('podcasts', podcasts)
         
-        # Try to get image URL but don't let it block the whole refresh
+        # Store refresh time
+        cache.set('last_refresh_time', current_time)
+        
+        # Start background image generation
         try:
             daily_image_url = get_daily_image_url(quote_data['quote'])
             cache.set('daily_image_url', daily_image_url)
         except Exception as e:
             print(f"Error during image generation: {str(e)}")
-            daily_image_url = "https://via.placeholder.com/1024x1024.png?text=Daily+Inspiration"
-            cache.set('daily_image_url', daily_image_url)
+            # Keep existing image or use default
+            if not cache.get('daily_image_url'):
+                cache.set('daily_image_url', "https://via.placeholder.com/1024x1024.png?text=Daily+Inspiration")
         
-        # Store refresh time
-        cache.set('last_refresh_time', current_time)
-        
-        return current_date, podcasts, daily_image_url, daily_tips, quote_data
+        return current_date, podcasts, get_initial_image_url(), daily_tips, quote_data
         
     except Exception as e:
         print(f"Error in refresh_all_data: {str(e)}")
-        # Return default values if refresh fails
         return (
             datetime.now(eastern).strftime('%B %d, %Y'),
             [],
@@ -131,10 +136,10 @@ def check_cache():
 @app.route('/')
 def home():
     current_date = cache.get('current_date')
-    daily_image_url = cache.get('daily_image_url')
     quote_data = cache.get('quote_data')
+    daily_image_url = get_initial_image_url()
     
-    if current_date is None or daily_image_url is None or quote_data is None:
+    if current_date is None or quote_data is None:
         current_date, _, daily_image_url, _, quote_data = refresh_all_data()
         
     return render_template('daily_quote_and_image.html', 
@@ -186,6 +191,12 @@ def chat():
     return jsonify({'response': response})
 
 chatbot = ChatBot()
+
+# Add a route to check/update image status
+@app.route('/check_image')
+def check_image():
+    image_url = cache.get('daily_image_url')
+    return jsonify({'image_url': image_url if image_url else get_initial_image_url()})
 
 if __name__ == '__main__':
     # Initial cache population
