@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, Response
 from datetime import datetime, date
 from scraping import get_all_spotify_podcasts
 from quotes import get_daily_quote
@@ -88,23 +88,16 @@ def get_initial_image_url():
     return cached_image if cached_image else "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"
 
 def save_daily_image(image_url):
-    """Download image from OpenAI and save to static folder"""
+    """Download image from OpenAI and store in Redis"""
     try:
         # Download image from OpenAI
         response = requests.get(image_url)
         
-        # Ensure static/images directory exists
-        os.makedirs('static/images', exist_ok=True)
+        # Store the actual image data in Redis
+        cache.set('daily_image_data', response.content, timeout=86400)
         
-        # Save with fixed name
-        image_path = 'static/images/daily_image.png'
-        
-        # Save image (will overwrite existing file)
-        with open(image_path, 'wb') as f:
-            f.write(response.content)
-        
-        # Return local URL path
-        return '/static/images/daily_image.png'
+        # Return the route path that will serve the image
+        return '/daily-image'
     except Exception as e:
         print(f"Error saving image: {str(e)}")
         return None
@@ -114,7 +107,7 @@ def generate_image_async(quote):
     try:
         temp_image_url = get_daily_image_url(quote)
         if temp_image_url and 'placeholder.com' not in temp_image_url:
-            # Save image locally and get local path
+            # Save image data to Redis and get serving path
             local_path = save_daily_image(temp_image_url)
             if local_path:
                 cache.set('daily_image_url', local_path, timeout=86400)
@@ -172,7 +165,7 @@ def home():
     if quote_data is None:
         _, _, _, quote_data = refresh_all_data()
     
-    # Use cached image or placeholder
+    # Use cached image path or placeholder
     if not daily_image_url:
         daily_image_url = "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"
     
@@ -263,6 +256,14 @@ def check_image():
     except Exception as e:
         print(f"Error checking image: {str(e)}")
         return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Error+Checking"})
+
+@app.route('/daily-image')
+def serve_daily_image():
+    """Serve the image directly from Redis"""
+    image_data = cache.get('daily_image_data')
+    if image_data:
+        return Response(image_data, mimetype='image/png')
+    return 'Image not found', 404
 
 if __name__ == '__main__':
     # Initial cache population

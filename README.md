@@ -30,6 +30,7 @@ Required environment variables:
 ```
 OPENAI_API_KEY=your_openai_api_key
 REDISCLOUD_URL=your_redis_cloud_url
+FLASK_ENV=development/production
 ```
 
 ## Setup
