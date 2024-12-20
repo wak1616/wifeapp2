@@ -62,8 +62,9 @@ def get_daily_image_url(quote):
 
 @app.context_processor
 def inject_current_date():
-    # This makes current_date available in all templates.
-    current_date = datetime.now().strftime("%B %d, %Y")
+    """Makes current_date available in all templates using the same format and timezone as refresh_all_data"""
+    eastern = pytz.timezone('America/New_York')
+    current_date = datetime.now(eastern).strftime('%B %d, %Y')
     return dict(current_date=current_date)
 
 def should_refresh_cache():
@@ -124,14 +125,14 @@ def check_cache():
 
 @app.route('/')
 def home():
-    current_date = cache.get('current_date')
     quote_data = cache.get('quote_data')
     daily_image_url = cache.get('daily_image_url')
     
-    if current_date is None or quote_data is None:
-        current_date, _, daily_tips, quote_data = refresh_all_data()
+    if quote_data is None:
+        _, _, _, quote_data = refresh_all_data()
     
-    if not daily_image_url:
+    # Don't use cached image if it's a placeholder
+    if not daily_image_url or 'placeholder.com' in daily_image_url:
         daily_image_url = "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"
         
     return render_template('daily_quote_and_image.html', 
@@ -165,9 +166,6 @@ def podcasts():
 
 @app.route('/about')
 def about():
-    current_date = cache.get('current_date')
-    if current_date is None:
-        current_date, _, _, _ = refresh_all_data()
     linkedin_url = "https://www.linkedin.com/in/joaquin-de-rojas-598830268/"
     X_url = "https://x.com/JdeRojasMD"
     return render_template('about.html', linkedin_url=linkedin_url, X_url=X_url)
