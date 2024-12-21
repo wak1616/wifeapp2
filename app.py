@@ -40,14 +40,19 @@ if os.environ.get('FLASK_ENV') != 'production':
 def get_daily_image_url(quote):
     try:
         # First check if we have cached image data
-        if cache.get('daily_image_data'):
-            print("Found existing image in cache")
+        image_data = cache.get('daily_image_data')
+        if image_data and len(image_data) > 10000:  # Only use cache if it's a real image (>10KB)
+            print("Found existing valid image in cache")
             return '/daily-image'
             
-        print("No cached image found, generating new one...")
+        print("No valid cached image found, generating new one...")
         api_key = os.getenv('OPENAI_API_KEY')
         client = OpenAI(api_key=api_key, timeout=25.0)
         
+        # Define the prompt here
+        prompt = f"Create a photorealistic image inspired by the following words: {quote}. The scene should be inspiring and visually pleasing. Focus on realism with rich details. The image should be visually balanced and optimized for display on both mobile and desktop screens."
+        
+        print(f"Sending prompt to DALL-E: {prompt[:100]}...")
         response = client.images.generate(
             model="dall-e-2",
             prompt=prompt,
@@ -64,10 +69,14 @@ def get_daily_image_url(quote):
         print(f"Downloaded image size: {len(image_response.content)} bytes")
         print(f"Content type: {image_response.headers.get('content-type')}")
         
-        cache.set('daily_image_data', image_response.content, timeout=86400)
-        print("Image stored in cache")
-        
-        return '/daily-image'
+        # Only cache if we got a real image
+        if len(image_response.content) > 10000:
+            cache.set('daily_image_data', image_response.content, timeout=86400)
+            print("Image stored in cache")
+            return '/daily-image'
+        else:
+            print("Downloaded data too small to be an image")
+            return "https://via.placeholder.com/1024x1024.png?text=Generation+Failed"
         
     except Exception as e:
         print(f"Error generating image: {str(e)}")
@@ -236,12 +245,14 @@ def generate_image():
             print("No quote data found in cache")
             return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Quote+Not+Found"})
         
+        # Clear any existing invalid image
+        cache.delete('daily_image_data')
+        
         print(f"Generating image for quote: {quote_data['quote'][:50]}...")
         daily_image_url = get_daily_image_url(quote_data['quote'])
         
         if daily_image_url and 'placeholder.com' not in daily_image_url:
             print(f"Successfully generated image: {daily_image_url[:50]}...")
-            cache.set('daily_image_url', daily_image_url)
             return jsonify({'image_url': daily_image_url})
         else:
             print("Image generation returned placeholder or None")
@@ -274,14 +285,21 @@ def serve_daily_image():
         print(f"Retrieved image data length: {len(image_data) if image_data else 'None'}")
         print(f"Image data type: {type(image_data)}")
         
-        if not image_data:
-            print("No image data found in cache")
+        if not image_data or len(image_data) < 10000:
+            print("No valid image data found in cache")
+            # Clear the invalid cache
+            cache.delete('daily_image_data')
             return 'Image not found', 404
             
         # Try to detect content type
         mime = magic.from_buffer(image_data, mime=True)
         print(f"Detected MIME type: {mime}")
         
+        if 'image' not in mime:
+            print("Cached data is not an image")
+            cache.delete('daily_image_data')
+            return 'Invalid image data', 500
+            
         return Response(image_data, mimetype=mime)
     except Exception as e:
         print(f"Error serving image: {str(e)}")
