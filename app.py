@@ -38,10 +38,9 @@ if os.environ.get('FLASK_ENV') != 'production':
 
 def get_daily_image_url(quote):
     try:
-        # First check if we already have a cached image
-        cached_image = cache.get('daily_image_url')
-        if cached_image:
-            return cached_image
+        # First check if we have cached image data
+        if cache.get('daily_image_data'):
+            return '/daily-image'  # Return the route that serves the cached image
             
         # Set a shorter timeout for the API call
         api_key = os.getenv('OPENAI_API_KEY')
@@ -57,13 +56,16 @@ def get_daily_image_url(quote):
             n=1,
         )
         
-        image_url = response.data[0].url
-        cache.set('daily_image_url', image_url)
-        return image_url
+        temp_image_url = response.data[0].url
+        
+        # Download and cache the actual image data
+        image_response = requests.get(temp_image_url)
+        cache.set('daily_image_data', image_response.content, timeout=86400)
+        
+        return '/daily-image'  # Return the route that serves the cached image
         
     except Exception as e:
         print(f"Error generating image: {str(e)}")
-        # Return a default image URL if generation fails
         return "https://via.placeholder.com/1024x1024.png?text=Daily+Inspiration"
 
 @app.context_processor
@@ -105,12 +107,9 @@ def save_daily_image(image_url):
 def generate_image_async(quote):
     """Generate image in background and cache it"""
     try:
-        temp_image_url = get_daily_image_url(quote)
-        if temp_image_url and 'placeholder.com' not in temp_image_url:
-            # Save image data to Redis and get serving path
-            local_path = save_daily_image(temp_image_url)
-            if local_path:
-                cache.set('daily_image_url', local_path, timeout=86400)
+        image_url = get_daily_image_url(quote)
+        if image_url and 'placeholder.com' not in image_url:
+            cache.set('daily_image_url', image_url, timeout=86400)
     except Exception as e:
         print(f"Error in async image generation: {str(e)}")
 
@@ -160,14 +159,17 @@ def check_cache():
 def home():
     current_date = cache.get('current_date')
     quote_data = cache.get('quote_data')
-    daily_image_url = cache.get('daily_image_url')
     
     if quote_data is None:
         _, _, _, quote_data = refresh_all_data()
     
-    # Use cached image path or placeholder
-    if not daily_image_url:
+    # Check for cached image data first
+    if cache.get('daily_image_data'):
+        daily_image_url = '/daily-image'
+    else:
         daily_image_url = "https://via.placeholder.com/1024x1024.png?text=Loading+Daily+Image"
+        # Trigger async image generation if no image exists
+        Thread(target=generate_image_async, args=(quote_data['quote'],)).start()
     
     return render_template('daily_quote_and_image.html', 
                          daily_image_url=daily_image_url,
