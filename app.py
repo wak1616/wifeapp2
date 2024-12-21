@@ -92,11 +92,13 @@ def get_initial_image_url():
 def save_daily_image(image_url):
     """Download image from OpenAI and store in Redis"""
     try:
-        # Download image from OpenAI
+        print(f"Downloading image from URL: {image_url}")
         response = requests.get(image_url)
+        print(f"Downloaded image size: {len(response.content)} bytes")
         
         # Store the actual image data in Redis
         cache.set('daily_image_data', response.content, timeout=86400)
+        print("Image data stored in Redis")
         
         # Return the route path that will serve the image
         return '/daily-image'
@@ -262,10 +264,16 @@ def check_image():
 @app.route('/daily-image')
 def serve_daily_image():
     """Serve the image directly from Redis"""
-    image_data = cache.get('daily_image_data')
-    if image_data:
-        return Response(image_data, mimetype='image/png')
-    return 'Image not found', 404
+    try:
+        image_data = cache.get('daily_image_data')
+        print(f"Retrieved image data length: {len(image_data) if image_data else 'None'}")
+        if image_data:
+            return Response(image_data, mimetype='image/png')
+        print("No image data found in cache")
+        return 'Image not found', 404
+    except Exception as e:
+        print(f"Error serving image: {str(e)}")
+        return f'Error serving image: {str(e)}', 500
 
 if __name__ == '__main__':
     # Initial cache population
