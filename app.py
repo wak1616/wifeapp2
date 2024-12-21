@@ -16,7 +16,7 @@ import magic
 
 app = Flask(__name__)
 
-# Update to use REDISCLOUD_URL
+# Update to use REDIS_URL (Heroku's default) or fall back to REDISCLOUD_URL
 redis_url = os.getenv('REDISCLOUD_URL', 'redis://localhost:6379/0')
 app.config['CACHE_TYPE'] = 'redis'
 app.config['CACHE_REDIS_URL'] = redis_url
@@ -67,12 +67,14 @@ def get_daily_image_url(quote):
         # Download and cache the actual image data
         image_response = requests.get(temp_image_url)
         print(f"Downloaded image size: {len(image_response.content)} bytes")
-        print(f"Content type: {image_response.headers.get('content-type')}")
         
         # Only cache if we got a real image
         if len(image_response.content) > 10000:
+            # Store both the image data and the generation date
+            today = datetime.now(pytz.timezone('America/New_York')).date()
             cache.set('daily_image_data', image_response.content, timeout=86400)
-            print("Image stored in cache")
+            cache.set('image_generation_date', today.isoformat(), timeout=86400)
+            print(f"Image stored in cache with date: {today.isoformat()}")
             return '/daily-image'
         else:
             print("Downloaded data too small to be an image")
@@ -234,6 +236,24 @@ def chat():
 
 chatbot = ChatBot()
 
+def should_regenerate_image():
+    """Check if we need to regenerate the image (true if last generation was before today)"""
+    try:
+        generation_date_str = cache.get('image_generation_date')
+        if not generation_date_str:
+            print("No generation date found, should regenerate")
+            return True
+            
+        generation_date = datetime.fromisoformat(generation_date_str).date()
+        today = datetime.now(pytz.timezone('America/New_York')).date()
+        
+        should_regen = generation_date < today
+        print(f"Generation date: {generation_date}, Today: {today}, Should regenerate: {should_regen}")
+        return should_regen
+    except Exception as e:
+        print(f"Error checking regeneration: {str(e)}")
+        return True
+
 @app.route('/generate_image')
 def generate_image():
     """Endpoint to generate and cache the daily image"""
@@ -245,8 +265,14 @@ def generate_image():
             print("No quote data found in cache")
             return jsonify({'image_url': "https://via.placeholder.com/1024x1024.png?text=Quote+Not+Found"})
         
+        # Only regenerate if needed
+        if not should_regenerate_image() and cache.get('daily_image_data'):
+            print("Using cached image")
+            return jsonify({'image_url': '/daily-image'})
+        
         # Clear any existing invalid image
         cache.delete('daily_image_data')
+        cache.delete('image_generation_date')
         
         print(f"Generating image for quote: {quote_data['quote'][:50]}...")
         daily_image_url = get_daily_image_url(quote_data['quote'])
