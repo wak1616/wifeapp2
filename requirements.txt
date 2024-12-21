@@ -36,7 +36,7 @@ pyppeteer==2.0.0
 pyquery==2.0.1
 PySocks==1.7.1
 python-dotenv==1.0.1
-python-magic-bin==0.4.14
+python-magic==0.4.27
 redis>=4.0.0
 requests==2.32.3
 schedule==1.2.0
