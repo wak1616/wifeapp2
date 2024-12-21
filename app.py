@@ -11,6 +11,7 @@ from flask_caching import Cache
 import redis  # for persistent caching (that persists between dyno restarts; SimpleCache just stores everything in memory)
 from threading import Thread
 import requests
+import magic
 
 
 app = Flask(__name__)
@@ -40,13 +41,12 @@ def get_daily_image_url(quote):
     try:
         # First check if we have cached image data
         if cache.get('daily_image_data'):
-            return '/daily-image'  # Return the route that serves the cached image
+            print("Found existing image in cache")
+            return '/daily-image'
             
-        # Set a shorter timeout for the API call
+        print("No cached image found, generating new one...")
         api_key = os.getenv('OPENAI_API_KEY')
-        client = OpenAI(api_key=api_key, timeout=25.0)  # 25 second timeout
-        
-        prompt = f"Create a photorealistic image inspired by the following words: {quote}. The scene should be inspiring and visually pleasing. Focus on realism with rich details. The image should be visually balanced and optimized for display on both mobile and desktop screens."
+        client = OpenAI(api_key=api_key, timeout=25.0)
         
         response = client.images.generate(
             model="dall-e-2",
@@ -57,12 +57,17 @@ def get_daily_image_url(quote):
         )
         
         temp_image_url = response.data[0].url
+        print(f"Generated image URL: {temp_image_url}")
         
         # Download and cache the actual image data
         image_response = requests.get(temp_image_url)
-        cache.set('daily_image_data', image_response.content, timeout=86400)
+        print(f"Downloaded image size: {len(image_response.content)} bytes")
+        print(f"Content type: {image_response.headers.get('content-type')}")
         
-        return '/daily-image'  # Return the route that serves the cached image
+        cache.set('daily_image_data', image_response.content, timeout=86400)
+        print("Image stored in cache")
+        
+        return '/daily-image'
         
     except Exception as e:
         print(f"Error generating image: {str(e)}")
@@ -267,10 +272,17 @@ def serve_daily_image():
     try:
         image_data = cache.get('daily_image_data')
         print(f"Retrieved image data length: {len(image_data) if image_data else 'None'}")
-        if image_data:
-            return Response(image_data, mimetype='image/png')
-        print("No image data found in cache")
-        return 'Image not found', 404
+        print(f"Image data type: {type(image_data)}")
+        
+        if not image_data:
+            print("No image data found in cache")
+            return 'Image not found', 404
+            
+        # Try to detect content type
+        mime = magic.from_buffer(image_data, mime=True)
+        print(f"Detected MIME type: {mime}")
+        
+        return Response(image_data, mimetype=mime)
     except Exception as e:
         print(f"Error serving image: {str(e)}")
         return f'Error serving image: {str(e)}', 500
