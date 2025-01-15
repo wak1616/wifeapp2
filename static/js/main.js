@@ -112,13 +112,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 userDiv.textContent = message;
                 chatMessages.appendChild(userDiv);
 
-                // Add thinking message
-                const thinkingDiv = document.createElement('div');
-                thinkingDiv.classList.add('thinking');
-                thinkingDiv.textContent = 'Thinking...';
-                thinkingDiv.id = 'thinking-message';
-                chatMessages.appendChild(thinkingDiv);
+                // Create bot message div
+                const botDiv = document.createElement('div');
+                botDiv.classList.add('message', 'bot-message');
+                chatMessages.appendChild(botDiv);
 
+                // Set up EventSource for streaming
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: {
@@ -131,25 +130,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                 });
 
-                const data = await response.json();
-                
-                // Remove thinking message
-                const thinkingMessage = document.getElementById('thinking-message');
-                if (thinkingMessage) {
-                    thinkingMessage.remove();
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let accumulatedResponse = '';
+
+                while (true) {
+                    const {value, done} = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                accumulatedResponse += data.chunk;
+                                botDiv.innerHTML = convertMarkdownToHtml(accumulatedResponse);
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            } catch (e) {
+                                console.error('Error parsing SSE data:', e);
+                            }
+                        }
+                    }
                 }
 
-                // Add bot response
-                const botDiv = document.createElement('div');
-                botDiv.classList.add('message', 'bot-message');
-                botDiv.innerHTML = convertMarkdownToHtml(data.response);
-                chatMessages.appendChild(botDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-
-                if (data.response.includes("cannot respond to any more comments")) {
+                if (accumulatedResponse.includes("cannot respond to any more comments")) {
                     chatInput.disabled = true;
                     sendButton.disabled = true;
                 }
+
             } catch (error) {
                 console.error('Error:', error);
                 const errorDiv = document.createElement('div');

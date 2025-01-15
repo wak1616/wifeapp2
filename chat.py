@@ -69,17 +69,24 @@ class ChatBot:
                 model=model,
                 messages=messages,
                 max_tokens=max_tokens,
-                temperature=temp
+                temperature=temp,
+                stream=True  # Enable streaming
             )
 
-            response_text = response.choices[0].message.content
-            
-            # Only store conversation history for initial tips
+            collected_chunks = []
+            # Stream the response
+            for chunk in response:
+                if chunk.choices[0].delta.content is not None:
+                    collected_chunks.append(chunk.choices[0].delta.content)
+                    yield chunk.choices[0].delta.content
+
+            # Store complete response in conversation history if needed
+            full_response = ''.join(collected_chunks)
             if is_new_tip:
-                self.conversation_history = messages + [{"role": "assistant", "content": response_text}]
+                self.conversation_history = messages + [{"role": "assistant", "content": full_response}]
 
             # Format response
-            lines = response_text.split('\n')
+            lines = full_response.split('\n')
             formatted_lines = []
             
             for line in lines:
@@ -89,8 +96,8 @@ class ChatBot:
                 else:
                     formatted_lines.append(line)
             
-            response_text = '\n'.join(formatted_lines)
-            return response_text + footer
+            full_response = '\n'.join(formatted_lines)
+            return full_response + footer
 
         except Exception as e:
-            return f"I apologize, but I encountered an error: {str(e)}"
+            yield f"I apologize, but I encountered an error: {str(e)}"

@@ -12,6 +12,7 @@ import redis  # for persistent caching (that persists between dyno restarts; Sim
 from threading import Thread
 import requests
 import magic
+import json
 
 
 app = Flask(__name__)
@@ -23,6 +24,8 @@ app.config['CACHE_REDIS_URL'] = redis_url
 app.config['CACHE_DEFAULT_TIMEOUT'] = 86400  # 24 hours
 
 cache = Cache(app)
+
+chatbot = ChatBot()
 
 # No need for dotenv in production
 api_key = os.getenv('OPENAI_API_KEY')
@@ -231,10 +234,13 @@ def chat():
     tip = data.get('tip')
     chat_type = data.get('type')
     
-    response = chatbot.get_response(message, tip, chat_type)
-    return jsonify({'response': response})
+    def generate():
+        for chunk in chatbot.get_response(message, tip, chat_type):
+            yield f"data: {json.dumps({'chunk': chunk})}\n\n"
 
-chatbot = ChatBot()
+    return Response(generate(), mimetype='text/event-stream')
+
+
 
 def should_regenerate_image():
     """Check if we need to regenerate the image (true if last generation was before today)"""
