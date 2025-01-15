@@ -3,7 +3,7 @@
 {% block content %}
 <div class="tips-container">
     <div class="update-frequency">Updated daily</div>
-    <div class="tip-card" onclick="openChat('{{ parenting_tip }}', 'parenting')">
+    <div class="tip-card">
         <div class="tip-image">
             <img src="{{ url_for('static', filename='images/parenting.webp') }}" alt="Parenting Tip">
         </div>
@@ -13,7 +13,7 @@
         </div>
     </div>
     
-    <div class="tip-card" onclick="openChat('{{ nutrition_tip }}', 'nutrition')">
+    <div class="tip-card">
         <div class="tip-image">
             <img src="{{ url_for('static', filename='images/nutrition.webp') }}" alt="Nutrition Tip">
         </div>
